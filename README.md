@@ -1,0 +1,2 @@
+# riguito-electron-app-ng
+
