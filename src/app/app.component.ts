@@ -47,7 +47,6 @@ export class AppComponent implements OnInit {
 
 			console.log("Imagen aleatoria:", this.randomImage);
 
-			// (Opcional) Si deseas reproducir el audio asociado:
 			const audioList = this.data.audios[this.randomImage] || [];
 			if (audioList.length > 0) {
 				this.playAudio(audioList[0]); // Reproduce el primer audio asociado
