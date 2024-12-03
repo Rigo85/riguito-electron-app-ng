@@ -1,4 +1,3 @@
-/* CSS */
 body, html {
 	margin: 0;
 	padding: 0;
@@ -21,4 +20,8 @@ body, html {
 .full-height-image {
 	height: 100%;
 	width: auto;
+}
+
+.drag-region {
+	-webkit-app-region: drag;
 }

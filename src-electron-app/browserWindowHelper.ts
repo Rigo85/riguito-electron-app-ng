@@ -1,8 +1,6 @@
 import { BrowserWindow, screen } from "electron";
 import path from "path";
 import { config } from "dotenv";
-import { Settings } from "../core/Settings";
-import { ElectronApp } from "./ElectronApp";
 
 config({path: ".env"});
 
@@ -23,6 +21,7 @@ export interface ElectronAppBrowserWindowOptions {
 	alwaysOnTop: boolean;
 	resizable: boolean;
 	show: boolean;
+	fullscreen: boolean;
 }
 
 export function createWindow(eabwo: ElectronAppBrowserWindowOptions): BrowserWindow {
@@ -34,14 +33,15 @@ export function createWindow(eabwo: ElectronAppBrowserWindowOptions): BrowserWin
 	const _height = size[1];
 
 	const window = new BrowserWindow({
-		width: _width,
-		height: _height,
-		x: x + Math.trunc(width / 2) - Math.trunc(_width / 2),
-		y: y + Math.trunc(height / 2) - Math.trunc(_height / 2),
+		width: eabwo.fullscreen ? width : _width,
+		height: eabwo.fullscreen ? height : _height,
+		x: eabwo.fullscreen ? x : x + Math.trunc(width / 2) - Math.trunc(_width / 2),
+		y: eabwo.fullscreen ? y : y + Math.trunc(height / 2) - Math.trunc(_height / 2),
 		frame: eabwo.frame,
 		transparent: eabwo.transparent,
 		parent: eabwo.parent,
 		show: eabwo.show,
+		fullscreen: eabwo.fullscreen,
 		webPreferences: {
 			preload: path.join(__dirname, "preload.js"),
 			nodeIntegration: true,
@@ -62,7 +62,7 @@ export function createWindow(eabwo: ElectronAppBrowserWindowOptions): BrowserWin
 
 	window.on("show", () => {
 		if (eabwo.onShow) {
-			eabwo.onShow(window, {});
+			eabwo.onShow(window, undefined);
 		}
 	});
 
@@ -98,6 +98,7 @@ export function createMainWindow(): BrowserWindow {
 		alwaysOnTop: true,
 		resizable: false,
 		show: false,
+		fullscreen: true,
 		onShow: (window: BrowserWindow, event: any) => {
 			if (devTools) {
 				window.webContents.openDevTools();
@@ -105,94 +106,3 @@ export function createMainWindow(): BrowserWindow {
 		}
 	});
 }
-
-// export function createHistoryWindow(parent: BrowserWindow): BrowserWindow {
-// 	const size = {
-// 		"default": [1050, 496]
-// 	} as Record<string, Pair<number>> & { default: Pair<number> };
-//
-// 	const icon = {
-// 		"darwin": "./public/icon.icns",
-// 		"win32": "./public/icon.ico",
-// 		"default": "./public/icon.png"
-// 	} as Record<string, string> & { default: string };
-//
-// 	return createWindow({
-// 		size,
-// 		icon,
-// 		frame: true,
-// 		transparent: false,
-// 		parent,
-// 		route: "history",
-// 		devTools,
-// 		alwaysOnTop: false,
-// 		resizable: true,
-// 		show: false,
-// 		onShow: onShowHistoryWindow,
-// 		onClose: (window: BrowserWindow, event: any) => {
-// 			ElectronApp.getInstance().MainWindow?.webContents.send("toggle-button", "history");
-// 			event.preventDefault();
-// 			window.webContents.closeDevTools();
-// 			window.hide();
-// 		}
-// 	});
-// }
-
-// async function onShowHistoryWindow(window: BrowserWindow, event: any) {
-// 	if (devTools) {
-// 		window.webContents.openDevTools();
-// 	}
-//
-// 	try {
-// 		ElectronApp.getInstance().MainWindow?.webContents.send("toggle-button", "history");
-// 		const data = await Settings.getInstance().getSpeedHistory();
-// 		window.webContents.send("speed-history-data", data);
-// 	} catch (e) {
-// 		console.error("onShowHistoryWindow", e);
-// 		ElectronApp.getInstance().MainWindow?.webContents.send("toggle-button", "history");
-// 	}
-// }
-
-// export function createAppSettingsWindow(parent: BrowserWindow): BrowserWindow {
-// 	const size = {
-// 		"default": [300, 300]
-// 	} as Record<string, Pair<number>> & { default: Pair<number> };
-//
-// 	const icon = {
-// 		"darwin": "./public/icon.icns",
-// 		"win32": "./public/icon.ico",
-// 		"default": "./public/icon.png"
-// 	} as Record<string, string> & { default: string };
-//
-// 	return createWindow({
-// 		size,
-// 		icon,
-// 		frame: true,
-// 		transparent: false,
-// 		parent,
-// 		route: "settings",
-// 		devTools,
-// 		alwaysOnTop: false,
-// 		resizable: false,
-// 		show: false,
-// 		onShow: async (window: BrowserWindow, event: any) => {
-// 			if (devTools) {
-// 				window.webContents.openDevTools();
-// 			}
-//
-// 			try {
-// 				ElectronApp.getInstance().MainWindow?.webContents.send("toggle-button", "settings");
-// 				const dbSettings = await Settings.getInstance().getSettings();
-// 				window.webContents.send("settings-data", dbSettings);
-// 			} catch (e) {
-// 				console.error("onShowAppSettingsWindow", e);
-// 			}
-// 		},
-// 		onClose: (window: BrowserWindow, event: any) => {
-// 			ElectronApp.getInstance().MainWindow?.webContents.send("toggle-button", "settings");
-// 			event.preventDefault();
-// 			window.webContents.closeDevTools();
-// 			window.hide();
-// 		}
-// 	});
-// }

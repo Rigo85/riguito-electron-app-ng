@@ -7,7 +7,7 @@ import { catchError, Observable, of } from "rxjs";
 })
 export class DataService {
 
-	private dataUrl = "/data/data.json";
+	private dataUrl = "./data/data.json";
 
 	constructor(private http: HttpClient) { }
 

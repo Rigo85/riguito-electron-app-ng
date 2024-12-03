@@ -38,7 +38,7 @@ export class AppComponent implements OnInit {
 		});
 	}
 
-	@HostListener("document:keydown", ["$event"])
+	@HostListener("document:keyup", ["$event"])
 	onKeyPress(event: KeyboardEvent): void {
 		if (this.data && this.data.images.length > 0) {
 			// Selecciona una imagen aleatoria
@@ -60,7 +60,7 @@ export class AppComponent implements OnInit {
 			this.audioPlayer = new Audio(); // Crear una única instancia
 		}
 
-		this.audioPlayer.src = `/data/audios/${audioFile}`;
+		this.audioPlayer.src = `./data/audios/${audioFile}`;
 		this.audioPlayer.load(); // Cargar el archivo de audio
 		this.audioPlayer.play().catch((error) => {
 			console.error("Error al reproducir el audio:", error);
