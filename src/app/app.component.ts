@@ -1,4 +1,4 @@
-import { Component, HostListener, OnInit } from "@angular/core";
+import { ChangeDetectorRef, Component, HostListener, OnInit } from "@angular/core";
 import { DataService } from "./services/data.service";
 import { NgIf } from "@angular/common";
 
@@ -16,7 +16,7 @@ export class AppComponent implements OnInit {
 	randomImage?: string = undefined;
 	private audioPlayer?: HTMLAudioElement = undefined; // Instancia reutilizable de Audio
 
-	constructor(private dataService: DataService) {}
+	constructor(private dataService: DataService, private cdr: ChangeDetectorRef) {}
 
 	ngOnInit(): void {
 		this.dataService.getData().subscribe({
@@ -41,6 +41,8 @@ export class AppComponent implements OnInit {
 	@HostListener("document:keyup", ["$event"])
 	onKeyPress(event: KeyboardEvent): void {
 		if (this.data && this.data.images.length > 0) {
+			this.randomImage = undefined;
+			this.cdr.detectChanges(); // Actualizar la vista
 			// Selecciona una imagen aleatoria
 			const randomIndex = Math.floor(Math.random() * this.data.images.length);
 			this.randomImage = this.data.images[randomIndex];
