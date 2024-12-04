@@ -2,11 +2,13 @@ body, html {
 	margin: 0;
 	padding: 0;
 	height: 100%;
+	overflow: hidden; /* Evita scroll en toda la página */
 }
 
 .image-wrapper {
 	text-align: center;
 	height: 100vh; /* O la altura que desees */
+	overflow: hidden; /* Evita scroll dentro del contenedor */
 }
 
 .image-container {
@@ -14,12 +16,15 @@ body, html {
 	display: flex;
 	align-items: center;     /* Centra verticalmente */
 	justify-content: center; /* Centra horizontalmente */
+	overflow: hidden; /* Evita scroll dentro del contenedor */
 }
-
 
 .full-height-image {
 	height: 100%;
 	width: auto;
+	max-width: 100%; /* Limita el ancho al 100% del contenedor */
+	max-height: 100%; /* Limita la altura al 100% del contenedor */
+	object-fit: contain; /* Escala la imagen sin deformarla */
 }
 
 .drag-region {
