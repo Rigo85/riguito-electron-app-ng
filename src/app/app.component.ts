@@ -15,6 +15,7 @@ export class AppComponent implements OnInit {
 	errorMessage?: string = undefined;
 	randomImage?: string = undefined;
 	private audioPlayer?: HTMLAudioElement = undefined; // Instancia reutilizable de Audio
+	private shuffledImages: string[] = [];
 
 	constructor(private dataService: DataService, private cdr: ChangeDetectorRef) {}
 
@@ -38,20 +39,36 @@ export class AppComponent implements OnInit {
 		});
 	}
 
+	private shuffleArray(array: any[]): any[] {
+		for (let i = array.length - 1; i > 0; i--) {
+			const j = Math.floor(Math.random() * (i + 1));
+			[array[i], array[j]] = [array[j], array[i]];
+		}
+		return array;
+	}
+
 	@HostListener("document:keyup", ["$event"])
 	onKeyPress(event: KeyboardEvent): void {
 		if (this.data && this.data.images.length > 0) {
 			this.randomImage = undefined;
 			this.cdr.detectChanges(); // Actualizar la vista
 			// Selecciona una imagen aleatoria
-			const randomIndex = Math.floor(Math.random() * this.data.images.length);
-			this.randomImage = this.data.images[randomIndex];
+			// const randomIndex = Math.floor(Math.random() * this.data.images.length);
+			// this.randomImage = this.data.images[randomIndex];
+			if (this.data) {
+				if (!this.shuffledImages?.length) {
+					this.shuffledImages = this.shuffleArray([...this.data.images]);
+				}
+				this.randomImage = this.shuffledImages.pop();
 
-			console.log("Imagen aleatoria:", this.randomImage);
+				console.log("Imagen aleatoria:", this.randomImage);
 
-			const audioList = this.data.audios[this.randomImage] || [];
-			if (audioList.length > 0) {
-				this.playAudio(audioList[0]); // Reproduce el primer audio asociado
+				if (this.randomImage) {
+					const audioList = this.data.audios[this.randomImage] || [];
+					if (audioList.length > 0) {
+						this.playAudio(audioList[0]); // Reproduce el primer audio asociado
+					}
+				}
 			}
 		}
 	}
