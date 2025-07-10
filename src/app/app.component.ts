@@ -1,6 +1,9 @@
-import { ChangeDetectorRef, Component, HostListener, OnInit } from "@angular/core";
-import { DataService } from "./services/data.service";
+import { ChangeDetectorRef, Component, HostListener, OnDestroy, OnInit } from "@angular/core";
 import { NgIf } from "@angular/common";
+import { Subscription } from "rxjs";
+
+import { AudioService } from "./services/audio.service";
+import { DataService } from "./services/data.service";
 
 @Component({
 	selector: "app-root",
@@ -10,14 +13,19 @@ import { NgIf } from "@angular/common";
 	templateUrl: "./app.component.html",
 	styleUrl: "./app.component.scss"
 })
-export class AppComponent implements OnInit {
+export class AppComponent implements OnInit, OnDestroy {
 	data?: { images: string[], audios: Record<string, string[]> } = undefined;
 	errorMessage?: string = undefined;
 	randomImage?: string = undefined;
 	private audioPlayer?: HTMLAudioElement = undefined; // Instancia reutilizable de Audio
 	private shuffledImages: string[] = [];
+	private audioSubscription?: Subscription = undefined;
 
-	constructor(private dataService: DataService, private cdr: ChangeDetectorRef) {}
+	constructor(
+		private dataService: DataService,
+		private audioService: AudioService,
+		private cdr: ChangeDetectorRef
+	) {}
 
 	ngOnInit(): void {
 		this.dataService.getData().subscribe({
@@ -39,6 +47,12 @@ export class AppComponent implements OnInit {
 		});
 	}
 
+	ngOnDestroy(): void {
+		if (this.audioSubscription) {
+			this.audioSubscription.unsubscribe();
+		}
+	}
+
 	private shuffleArray(array: any[]): any[] {
 		for (let i = array.length - 1; i > 0; i--) {
 			const j = Math.floor(Math.random() * (i + 1));
@@ -49,39 +63,42 @@ export class AppComponent implements OnInit {
 
 	@HostListener("document:keyup", ["$event"])
 	onKeyPress(event: KeyboardEvent): void {
+		const keys = [
+			"Shift", "Control", "Alt", "Meta",
+			...Array.from({length: 12}, (_, i) => `F${i + 1}`)
+		];
+
+		if (keys.includes(event.key)) {
+			console.log(`Tecla "${event.key}" ignorada`);
+			return;
+		}
+
+		if (this.audioService.isPlaying) {
+			console.log("Audio en reproducción, ignorando evento de teclado");
+			return;
+		}
+
 		if (this.data && this.data.images.length > 0) {
 			this.randomImage = undefined;
-			this.cdr.detectChanges(); // Actualizar la vista
-			// Selecciona una imagen aleatoria
-			// const randomIndex = Math.floor(Math.random() * this.data.images.length);
-			// this.randomImage = this.data.images[randomIndex];
-			if (this.data) {
-				if (!this.shuffledImages?.length) {
-					this.shuffledImages = this.shuffleArray([...this.data.images]);
-				}
-				this.randomImage = this.shuffledImages.pop();
+			this.cdr.detectChanges();
 
-				console.log("Imagen aleatoria:", this.randomImage);
+			if (!this.shuffledImages?.length) {
+				this.shuffledImages = this.shuffleArray([...this.data.images]);
+			}
+			this.randomImage = this.shuffledImages.pop();
 
-				if (this.randomImage) {
-					const audioList = this.data.audios[this.randomImage] || [];
-					if (audioList.length > 0) {
-						this.playAudio(audioList[0]); // Reproduce el primer audio asociado
-					}
+			console.info("Random image:", this.randomImage);
+
+			if (this.randomImage) {
+				const audioList = this.data.audios[this.randomImage] || [];
+				if (audioList.length > 0) {
+					this.playAudio(audioList[0]);
 				}
 			}
 		}
 	}
 
 	playAudio(audioFile: string): void {
-		if (!this.audioPlayer) {
-			this.audioPlayer = new Audio(); // Crear una única instancia
-		}
-
-		this.audioPlayer.src = `./data/audios/${audioFile}`;
-		this.audioPlayer.load(); // Cargar el archivo de audio
-		this.audioPlayer.play().catch((error) => {
-			console.error("Error al reproducir el audio:", error);
-		});
+		this.audioService.playAudio(audioFile);
 	}
 }
